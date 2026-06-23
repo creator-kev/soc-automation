@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: sigma-converter
+Version: 0.1.0
+Summary: CSV → Sigma rule converter for SOC automation
+Requires-Python: >=3.11

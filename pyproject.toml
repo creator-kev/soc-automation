@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sigma-converter"
+version = "0.1.0"
+description = "CSV → Sigma rule converter for SOC automation"
+requires-python = ">=3.11"
+
+[project.scripts]
+sigma-conv = "sigma_converter.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,10 @@
+pyproject.toml
+src/sigma_converter/__init__.py
+src/sigma_converter/cli.py
+src/sigma_converter/converter.py
+src/sigma_converter.egg-info/PKG-INFO
+src/sigma_converter.egg-info/SOURCES.txt
+src/sigma_converter.egg-info/dependency_links.txt
+src/sigma_converter.egg-info/entry_points.txt
+src/sigma_converter.egg-info/top_level.txt
+tests/test_converter.py

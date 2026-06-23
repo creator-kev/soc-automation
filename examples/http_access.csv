@@ -1,0 +1,5 @@
+client,request,status,user_agent
+10.0.0.1,"GET /admin HTTP/1.1",200,"curl/7.68"
+10.0.0.2,"POST /login HTTP/1.1",401,"httpie/3.0"
+10.0.0.1,"GET /admin HTTP/1.1",200,"curl/7.68"
+10.0.0.3,"GET /robots.txt HTTP/1.1",200,"Googlebot/2.2"

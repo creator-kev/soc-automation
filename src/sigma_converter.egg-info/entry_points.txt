@@ -1,0 +1,2 @@
+[console_scripts]
+sigma-conv = sigma_converter.cli:main
