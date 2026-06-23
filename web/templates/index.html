@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOC Automation — Sigma Rule Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+  <div class="max-w-5xl mx-auto px-4 py-8">
+    <header class="mb-8">
+      <h1 class="text-2xl font-bold">Sigma Rule Generator</h1>
+      <p class="text-gray-400">Convert CSV/JSONL logs into Sigma detection rules.</p>
+    </header>
+
+    <div class="grid gap-6 md:grid-cols-2">
+      <section class="bg-gray-800 border border-gray-700 rounded-lg p-4">
+        <h2 class="text-lg font-semibold mb-3">Input</h2>
+        <form id="convert-form" class="space-y-3">
+          <div>
+            <label class="block text-sm text-gray-300">Title</label>
+            <input id="title" required class="w-full rounded bg-gray-700 border border-gray-600 px-3 py-2" />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">Format</label>
+            <select id="format" class="w-full rounded bg-gray-700 border border-gray-600 px-3 py-2">
+              <option value="csv">CSV</option>
+              <option value="jsonl">JSON Lines</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">Log data</label>
+            <textarea id="log-data" rows="8" required class="w-full rounded bg-gray-700 border border-gray-600 px-3 py-2 font-mono text-sm"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300">Mappings (one per line, source:sigma:transform)</label>
+            <textarea id="mappings" rows="4" class="w-full rounded bg-gray-700 border border-gray-600 px-3 py-2 font-mono text-sm" placeholder="client:src_ip:ip&#10;request:request:url"></textarea>
+          </div>
+          <div class="flex gap-2">
+            <button type="submit" class="rounded bg-blue-600 hover:bg-blue-500 px-4 py-2 text-white">Convert</button>
+            <button type="button" id="sample-btn" class="rounded bg-gray-700 hover:bg-gray-600 px-4 py-2">Sample CSV</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="bg-gray-800 border border-gray-700 rounded-lg p-4">
+        <h2 class="text-lg font-semibold mb-3">Result</h2>
+        <pre id="output" class="bg-gray-950 border border-gray-700 rounded p-3 text-sm text-gray-100 overflow-auto h-[420px]"></pre>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const sampleCSV = `client,request,status,user_agent\n10.0.0.1,"GET /admin HTTP/1.1",200,"curl/7.68"\n10.0.0.2,"POST /login HTTP/1.1",401,"httpie/3.0"`;
+    const sampleMappings = `client:src_ip:ip\nrequest:request:url\nstatus:status:raw\nuser_agent:user_agent:raw`;
+
+    const sampleBtn = document.getElementById('sample-btn');
+    const logData = document.getElementById('log-data');
+    const mappings = document.getElementById('mappings');
+    sampleBtn.addEventListener('click', () => {
+      logData.value = sampleCSV;
+      mappings.value = sampleMappings;
+    });
+
+    const form = document.getElementById('convert-form');
+    const output = document.getElementById('output');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      output.textContent = 'Converting...';
+      const body = {
+        title: document.getElementById('title').value,
+        log_format: document.getElementById('format').value,
+        log_data: logData.value,
+        mappings: mappings.value.split('\n').filter(Boolean),
+      };
+      const res = await fetch('/api/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        output.textContent = 'Error: ' + res.status;
+        return;
+      }
+      const data = await res.json();
+      output.textContent = data.rule_yaml;
+    });
+  </script>
+</body>
+</html>
