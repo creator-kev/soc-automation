@@ -1,4 +1,4 @@
-"""FastAPI web app: upload logs, generate Sigma rules, browse generated rules."""
+"""FastAPI web app: serve a minimal Sigma rule generator UI and conversion API."""
 from __future__ import annotations
 
 import uuid
@@ -6,16 +6,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, Form, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
 from sigma_converter import CsvToSigmaConverter, DetectionRule, FieldMapping
 
 app = FastAPI(title="Sigma Rule Generator")
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-templates = Jinja2Templates(directory=str(BASE_DIR / "web" / "templates"))
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+TEMPLATE_PATH = PROJECT_ROOT / "web" / "templates" / "index.html"
 
 
 class ConvertRequest(BaseModel):
@@ -36,8 +35,9 @@ class ConvertResponse(BaseModel):
 
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse("index.html", {"request": request})
+async def index() -> HTMLResponse:
+    html = TEMPLATE_PATH.read_text(encoding="utf-8")
+    return HTMLResponse(html)
 
 
 @app.post("/api/convert", response_model=ConvertResponse)
@@ -52,7 +52,7 @@ async def convert_api(payload: ConvertRequest) -> JSONResponse:
             else converter.convert_jsonl(payload.log_data, rule)
         )
         return JSONResponse({"rule_yaml": rendered, "fields": rule.fields})
-    except Exception as exc:  # pragma: no cover - defensive
+    except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
@@ -82,7 +82,7 @@ def _build_rule(title: str, rule_id: str | None, level: str) -> DetectionRule:
         id=rule_id or title.lower().replace(" ", "-")[:32],
         description="Generated from SOC Automation Sigma Converter",
         author="soc-automation",
-        date=datetime.utcnow().date().isoformat(),
+        date=datetime.now().date().isoformat(),
         level=level,
     )
 
@@ -91,9 +91,8 @@ def run() -> None:
     import uvicorn
 
     uvicorn.run(
-        "sigma_converter.web_app:app",
+        app,
         host="0.0.0.0",
         port=8080,
-        reload=False,
         log_level="info",
     )

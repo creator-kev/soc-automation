@@ -1,2 +1,3 @@
 [console_scripts]
 sigma-conv = sigma_converter.cli:main
+sigma-web = sigma_converter.web_app:run

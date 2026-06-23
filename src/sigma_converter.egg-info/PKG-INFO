@@ -1,5 +1,99 @@
 Metadata-Version: 2.4
 Name: sigma-converter
 Version: 0.1.0
-Summary: CSV → Sigma rule converter for SOC automation
+Summary: Convert custom application logs into Sigma detection rules with field mapping, transforms, and validation.
+Author-email: Kevin Gachoka Gichuhi <creator-kev@users.noreply.github.com>
+License: MIT
+Keywords: sigma,soc,siem,detection,rules,security,automation
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Security
 Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: pydantic>=2
+Provides-Extra: web
+Requires-Dist: fastapi>=0.111; extra == "web"
+Requires-Dist: uvicorn[standard]>=0.30; extra == "web"
+Requires-Dist: jinja2>=3.1; extra == "web"
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Requires-Dist: pytest-cov>=5; extra == "dev"
+Requires-Dist: ruff>=0.4; extra == "dev"
+Requires-Dist: mypy>=1.10; extra == "dev"
+
+# soc-automation
+
+Convert raw application logs into [Sigma](https://github.com/SigmaHQ/sigma) detection rules with field mapping, transforms, validation-friendly structure, and a minimal web UI.
+
+**Why this exists:** SOCs and red teams often have to hand-roll detection rules from weird log formats. This tool maps your source fields to a Sigma-compatible model, infers common HTTP/network fields, and renders a ready-to-use rule in seconds.
+
+## Install
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[web,dev]"
+```
+
+## CLI
+
+```bash
+sigma-conv examples/http_access.csv "HTTP Admin Access"
+sigma-conv examples/http_access.jsonl "JSONL HTTP Access" --format jsonl
+```
+
+Arguments:
+- `INPUT` — input log file path
+- `TITLE` — Sigma rule title
+- `--format` — input format: `csv` (default) or `jsonl`
+- `--out` — write rule to file instead of stdout
+- `--level` — rule severity: `low`, `medium`, `high`, `critical`
+- `--mapping` — field mappings in `source:sigma_field:transform` form (repeatable)
+- `--id` — forced rule UUID
+
+Web UI:
+```bash
+sigma-web
+# open http://localhost:8080
+```
+
+## Field mapping
+
+| Transform | Behavior |
+|---|---|
+| `raw` | passthrough as `contains` |
+| `ip` | passthrough; reserved for src/dest IP |
+| `url` | collapses whitespace in URLs |
+| `domain` | strips scheme/path, keeps host |
+| `startswith` | becomes `value*` |
+| `endswith` | becomes `*value` |
+| `regex` | wraps in `/pattern/i` |
+
+## Repo layout
+
+```
+/app
+├── pyproject.toml
+├── README.md
+├── STRUCTURE.md
+├── src/sigma_converter/
+│   ├── __init__.py
+│   ├── converter.py
+│   ├── cli.py
+│   └── web_app.py
+├── tests/test_converter.py
+├── examples/http_access.csv
+├── examples/http_access.jsonl
+├── web/templates/index.html
+└── .github/workflows/ci.yml
+```
+
+## CI
+
+GitHub Actions runs:
+- install with extras `web,dev`
+- `pytest`
+- build sanity check: `python -c "import sigma_converter"`
+
