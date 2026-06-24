@@ -5,21 +5,21 @@
 ## Current Task
 - `[x]` Scaffold package: `sigma_converter`
 - `[x]` Implement `CsvToSigmaConverter` (field mapping + heuristic inference)
-- `[x]` Add pytest test suite (6 tests)
+- `[x]` Add pytest test suite
 - `[x]` CLI entry point: `sigma-conv`
+- `[x]` FastAPI web UI (`/` + `/api/convert`)
 - `[x]` End-to-end run: CSV → Sigma output verified
+- `[x]` CI + docs + GitHub push
 
 ## Done Today
-- `src/sigma_converter/__init__.py`
-- `src/sigma_converter/converter.py`
-- `src/sigma_converter/cli.py`
+- `src/sigma_converter/*`
 - `tests/test_converter.py`
-- `examples/http_access.csv`
-- `pyproject.toml`
+- `examples/http_access.csv`, `examples/http_access.jsonl`
+- `web/templates/index.html`
+- `.github/workflows/ci.yml`
+- `docs/container-escape/` (knowledge pack added)
 
 ## Next
-- [ ] Add JSON log parser support
-- [ ] Support `|startswith`, `|endswith`, `|regex` transforms
-- [ ] Integrate with `fleet` / `elastic-agent` output formats
-- [ ] Add YAML Sigma output option
-- [ ] GitHub Actions workflow: lint + test on push
+- `[ ]` v0.2: add JSON log parser + transforms
+- `[ ]` Integrate with `fleet` / `elastic-agent` output formats
+- `[ ]` SOC playbook pack (cloud, AD, network rules)
